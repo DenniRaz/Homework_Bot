@@ -6,17 +6,18 @@ from http import HTTPStatus
 
 from dotenv import load_dotenv
 
+from exceptions import HomeworkStatusError, TokenError
+
 import requests
 
 import telegram
-
-from exceptions import TokenError, HomeworkStatusError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 handler = logging.FileHandler('homework.log', mode='w', encoding='utf-8')
-formatter = logging.Formatter('%(name)s [%(funcName)s] %(asctime)s [%(levelname)s]: %(message)s')
+formatter = logging.Formatter('%(name)s [%(funcName)s] %(asctime)s '
+                              '[%(levelname)s]: %(message)s')
 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -48,7 +49,7 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug('Сообщение отправлено')
-    except Exception as error:
+    except Exception:
         logger.error('Ошибка при отправке сообщения')
 
 
@@ -82,7 +83,8 @@ def check_response(response):
         logger.error('Ключ homeworks отсутствует в документации')
         raise KeyError
     elif not isinstance(response.get('homeworks'), list):
-        logger.error('Значение ключа homeworks не соответствует формату документации')
+        logger.error('Значение ключа homeworks'
+                     ' не соответствует формату документации')
         raise TypeError
     try:
         homework = response['homeworks']
