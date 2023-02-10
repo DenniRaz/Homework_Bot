@@ -20,14 +20,19 @@ class TelegramMessageError(HomeworkError):
     error = 'Ошибка при отправке сообщения'
 
 
+class RequestError(HomeworkError):
+    """Исключение возникает при условии возникновения ошибки доступа URL."""
+    error = 'Ошибка доступа URL'
+
+
+class JSONError(HomeworkError):
+    """Исключение возникает при попытке декодирования JSON"""
+    error = 'Ошибка декодирования JSON'
+
+
 class HomeworkStatusError(HomeworkError):
     """
     Исключение возникает при условии отсутсвия выявленного
     статуса работы в словаре HOMEWORK_VERDICTS.
     """
     error = 'В HOMEWORK_VERDICTS нет выявленного статуса работы'
-
-
-class TokenError(HomeworkError):
-    """Исключение возникает при условии отсутсвия переменных окружения."""
-    error = 'Переменные окружения недоступны'

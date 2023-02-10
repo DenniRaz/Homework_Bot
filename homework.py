@@ -1,12 +1,18 @@
 import json
 import logging
 import os
+import sys
 import time
 from http import HTTPStatus
 
 from dotenv import load_dotenv
 
-from exceptions import HomeworkStatusError, TokenError
+from exceptions import (
+    HomeworkStatusError,
+    JSONError,
+    RequestError,
+    TelegramMessageError
+)
 
 import requests
 
@@ -46,15 +52,18 @@ def check_tokens():
 
 def send_message(bot, message):
     """Отправка сообщения в Telegram чат."""
+    logger.info('Начало отправки сообщения')
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug('Сообщение отправлено')
-    except Exception:
+    except telegram.TelegramError:
         logger.error('Ошибка при отправке сообщения')
+        raise TelegramMessageError
 
 
 def get_api_answer(timestamp):
     """Запрос к эндпоинту API-сервиса Практикум.Домашка."""
+    logger.info('Начало запроса к API')
     try:
         homework_statuses = requests.get(
             url=ENDPOINT,
@@ -68,10 +77,10 @@ def get_api_answer(timestamp):
         return homework_statuses.json()
     except requests.exceptions.RequestException('Ошибка доступа URL') as error:
         logger.error(error, exc_info=True)
-        raise error
+        raise RequestError
     except json.decoder.JSONDecodeError as error:
         logger.error(error, exc_info=True)
-        raise error
+        raise JSONError
 
 
 def check_response(response):
@@ -116,7 +125,7 @@ def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logger.critical('Переменные окружения недоступны')
-        raise TokenError
+        sys.exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time()) - RETRY_PERIOD
     while True:
